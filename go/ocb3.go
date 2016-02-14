@@ -33,8 +33,12 @@ type ctx struct {
 	tsize int
 }
 
-type AEAD interface {
+// AEADClearer is a cipher.AEAD that can also have its internal state cleared.
+type AEADClearer interface {
 	cipher.AEAD
+
+	// Clear uses memset to clear the context. This may have some benefits in
+	// keeping secrets, but provides no guarantees.
 	Clear()
 }
 
@@ -42,7 +46,7 @@ type AEAD interface {
 // 256 bits. Nonce size is fixed to 12 bytes due to limitations in ocb.c. Tag
 // size can range from 1 to 16 and defaults to 16. Returns error if input
 // parameters are invalid.
-func New(key []byte, os ...Opt) (AEAD, error) {
+func New(key []byte, os ...Opt) (AEADClearer, error) {
 	ret := &ctx{tsize: 16}
 	for _, o := range os {
 		if err := o(ret); err != nil {
