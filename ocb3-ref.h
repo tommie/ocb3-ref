@@ -12,14 +12,22 @@
 /* Set the AES key length to use and length of authentication tag to produce.
 /  Setting either to 0 requires the value be set at runtime via ae_init().
 /  Some optimizations occur for each when set to a fixed value.            */
-#define OCB_KEY_LEN         16  /* 0, 16, 24 or 32. 0 means set in ae_init */
-#define OCB_TAG_LEN         16  /* 0 to 16. 0 means set in ae_init         */
+#ifndef OCB_KEY_LEN
+    #define OCB_KEY_LEN         16  /* 0, 16, 24 or 32. 0 means set in ae_init */
+#endif
+#ifndef OCB_TAG_LEN
+    #define OCB_TAG_LEN         16  /* 0 to 16. 0 means set in ae_init         */
+#endif
 
 /* This implementation has built-in support for multiple AES APIs. Set any
 /  one of the following to non-zero to specify which to use.               */
-#define USE_OPENSSL_AES      0  /* http://openssl.org                      */
-#define USE_REFERENCE_AES    1  /* Internet search: rijndael-alg-fst.c     */
-#define USE_AES_NI           0  /* Uses compiler's intrinsics              */
+#if OCB_AES_IMPL == 0
+    #define USE_OPENSSL_AES      1  /* http://openssl.org                      */
+#elif OCB_AES_IMPL == 1 || (__AES__ && __SSE3__)
+    #define USE_AES_NI           1  /* Uses compiler's intrinsics              */
+#else
+    #define USE_REFERENCE_AES    1  /* Internet search: rijndael-alg-fst.c     */
+#endif
 
 /* During encryption and decryption, various "L values" are required.
 /  The L values can be precomputed during initialization (requiring extra
